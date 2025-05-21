@@ -1,450 +1,732 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Formulário – Progressão Funcional (Professores PE)</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    h2 {
-      background: #f2f2f2;
-      padding: 10px;
-      border-left: 4px solid #4CAF50;
-    }
-    .form-section {
-      margin-bottom: 20px;
-    }
-    .form-section label {
-      font-weight: bold;
-    }
-    .form-group {
-      margin-bottom: 10px;
-    }
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 8px;
-      box-sizing: border-box;
-      margin-top: 5px;
-    }
-    .small-input {
-      width: 100%;
-      max-width: 150px;
-      display: inline-block;
-    }
-    .medium-input {
-      width: 100%;
-      max-width: 300px;
-      display: inline-block;
-    }
-    .form-inline > * {
-      display: inline-block;
-      vertical-align: middle;
-      margin-right: 10px;
-      margin-bottom: 10px;
-    }
-    .output-field {
-      background: #e9e9e9;
-      font-weight: bold;
-    }
-    .terms-label {
-      font-weight: normal;
-    }
-    button {
-      background: #4CAF50;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    button:hover {
-      background: #45a049;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Veja o Valor Correto do Seu Salário - Educação PE (LC 539/2024)</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.5; }
+  h1 { font-size: 1.8em; margin-bottom: 0.8em; color: #2e7d32; text-align: center; }
+  .subtitle { font-size: 1.2em; margin-bottom: 1.5em; text-align: center; color: #555; }
+  .form-section { margin-bottom: 1.5em; }
+  .form-section label { display: inline-block; width: 180px; font-weight: bold; }
+  .form-section input, .form-section select { width: 300px; padding: 6px; border-radius: 4px; border: 1px solid #ccc; }
+  #resultados { background: #f9f9f9; padding: 15px; border: 1px solid #ccc; margin-top: 20px; border-radius: 8px; display: none; }
+  #resultados h2 { color: #2e7d32; }
+  #resultados p { margin: 0.6em 0; }
+  .endereco-section { margin-top: 10px; }
+  .endereco-section input { margin-bottom: 5px; }
+  .btn-submit { background-color: #2e7d32; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 20px 0; font-size: 16px; font-weight: bold; }
+  .btn-submit:hover { background-color: #1b5e20; }
+  .loading { display: inline-block; margin-left: 10px; }
+  .salario-container { display: flex; flex-direction: column; }
+  .salario-select { margin-bottom: 10px; }
+  .salario-custom { display: flex; align-items: center; }
+  .salario-custom input { margin-left: 10px; }
+  .salario-custom-checkbox { width: auto !important; margin-right: 5px; }
+  .error { border-color: red !important; }
+  .debug-info { font-size: 12px; color: #666; margin-top: 5px; }
+  .required-field::after { content: " *"; color: red; }
+  .container { max-width: 800px; margin: 0 auto; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
+  .submit-container { text-align: center; margin: 30px 0; }
+  .benefits { background-color: #e8f5e9; padding: 15px; border-radius: 8px; margin: 20px 0; }
+  .benefits h3 { color: #2e7d32; margin-top: 0; }
+  .benefits ul { padding-left: 20px; }
+  .benefits li { margin-bottom: 8px; }
+  .success-message { display: none; background-color: #e8f5e9; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center; }
+  .success-message h3 { color: #2e7d32; margin-top: 0; }
+</style>
 </head>
 <body>
 
-  <h2>Dados Pessoais</h2>
-  <form id="progressaoForm" action="https://script.google.com/macros/s/AKfycbwybDDENaIIZy5GrPE_bK5tGFxCkEjzZek8ADDcSslEb0E93YZ5ANpH_rwfa9zj27m9/exec" method="POST">
-    <!-- Seção Dados Pessoais -->
-    <div class="form-section">
-      <div class="form-group">
-        <label for="nome">Nome completo:</label>
-        <input type="text" id="nome" name="nome" required placeholder="Seu nome completo" />
-      </div>
-      <div class="form-group">
-        <label for="cpf">CPF:</label>
-        <input type="text" id="cpf" name="cpf" required placeholder="___.___.___-__" 
-               pattern="\d{3}\.?\d{3}\.?\d{3}-?\d{2}" title="Informe um CPF válido (11 dígitos)" />
-      </div>
-      <div class="form-group">
-        <label>Endereço:</label>
-        <!-- CEP field first, auto-fill via ViaCEP -->
-        <div class="form-group">
-          <input type="text" id="cep" name="endereco_cep" required placeholder="CEP" 
-                 pattern="\d{5}-?\d{3}" title="Formato: 00000-000" onblur="buscarCEP()" class="medium-input" />
-        </div>
-        <div class="form-group form-inline">
-          <input type="text" id="rua" name="endereco_rua" required placeholder="Rua/Avenida" style="width: 60%;" />
-          <input type="text" id="numero" name="endereco_numero" required placeholder="Número" class="small-input" />
-        </div>
-        <div class="form-group form-inline">
-          <input type="text" id="bairro" name="endereco_bairro" required placeholder="Bairro" class="medium-input" />
-          <input type="text" id="cidade" name="endereco_cidade" required placeholder="Cidade" class="medium-input" />
-          <input type="text" id="uf" name="endereco_estado" required placeholder="Estado" class="small-input" value="PE" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="telefone">Telefone:</label>
-        <input type="tel" id="telefone" name="telefone" required placeholder="(DD) ____-____" />
-      </div>
-      <div class="form-group">
-        <label for="email">E-mail:</label>
-        <input type="email" id="email" name="email" required placeholder="seuemail@exemplo.com" />
-      </div>
-    </div>
+<div class="container">
+  <h1>Veja o Valor Correto do Seu Salário</h1>
+  <p class="subtitle">Calcule quanto você deveria estar recebendo conforme a LC 539/2024</p>
 
-    <h2>Dados Funcionais</h2>
+  <div class="benefits">
+    <h3>Benefícios ao preencher este formulário:</h3>
+    <ul>
+      <li>Descubra se você está recebendo o valor correto do seu salário</li>
+      <li>Calcule quanto você poderia receber de atrasados (até 60 meses)</li>
+      <li>Receba uma análise personalizada da sua situação funcional</li>
+    </ul>
+  </div>
+
+  <form id="progForm">
     <div class="form-section">
-      <div class="form-group">
-        <label for="cargo">Cargo ocupado:</label>
-        <input type="text" id="cargo" name="cargo" required placeholder="Ex: Professor(a) - Matemática" />
-      </div>
-      <div class="form-group">
-        <label for="carga_horaria">Carga horária:</label>
-        <select id="carga_horaria" name="carga_horaria" required>
-          <option value="" disabled selected>Selecione...</option>
-          <option value="150">150h</option>
-          <option value="200">200h</option>
-          <option value="300">300h</option>
+      <label for="nome" class="required-field">Nome:</label>
+      <input type="text" id="nome" name="nome" required />
+    </div>
+    <div class="form-section">
+      <label for="cpf" class="required-field">CPF:</label>
+      <input type="text" id="cpf" name="cpf" maxlength="14" placeholder="000.000.000-00" required />
+    </div>
+    <div class="form-section">
+      <label for="cargo" class="required-field">Cargo:</label>
+      <select id="cargo" name="cargo" required>
+        <option value="" disabled selected>Selecione o cargo</option>
+        <option value="Professor">Professor(a)</option>
+        <option value="Analista">Analista em Gestão Educacional</option>
+        <option value="Assistente">Assistente Administrativo Educacional</option>
+        <option value="Auxiliar">Auxiliar Administrativo Educacional</option>
+      </select>
+    </div>
+    <div class="form-section">
+      <label for="carga_horaria" class="required-field">Carga Horária:</label>
+      <select id="carga_horaria" name="carga_horaria" required>
+        <option value="" disabled selected>Selecione a carga horária</option>
+        <!-- Opções serão preenchidas dinamicamente com base no cargo -->
+      </select>
+    </div>
+    <div class="form-section">
+      <label for="titulacao" class="required-field">Titulação:</label>
+      <select id="titulacao" name="titulacao" required>
+        <option value="" disabled selected>Selecione a titulação</option>
+        <!-- Opções serão preenchidas dinamicamente com base no cargo -->
+      </select>
+    </div>
+    <div class="form-section">
+      <label for="salarioSelect" class="required-field">Salário Base Atual (R$):</label>
+      <div class="salario-container">
+        <select id="salarioSelect" name="salarioSelect" class="salario-select">
+          <option value="" disabled selected>Selecione o salário</option>
+          <!-- Opções serão preenchidas dinamicamente com base no cargo, carga horária e titulação -->
         </select>
+        <div class="salario-custom">
+          <input type="checkbox" id="salarioCustomCheck" class="salario-custom-checkbox" />
+          <label for="salarioCustomCheck">Outro valor:</label>
+          <input type="text" id="salarioCustomInput" name="salarioCustomInput" placeholder="R$ 0,00" disabled />
+        </div>
       </div>
-      <div class="form-group">
-        <label for="data_ingresso">Data de ingresso no cargo:</label>
-        <input type="date" id="data_ingresso" name="data_ingresso" required />
-      </div>
-      <div class="form-group">
-        <label for="titulacao">Titulação:</label>
-        <select id="titulacao" name="titulacao" required>
-          <option value="" disabled selected>Selecione...</option>
-          <option value="magisterio">Magistério (nível médio)</option>
-          <option value="licenciatura">Licenciatura Plena</option>
-          <option value="especializacao">Especialização</option>
-          <option value="mestrado">Mestrado</option>
-          <option value="doutorado">Doutorado</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="lotacao">Escola/Unidade de lotação:</label>
-        <input type="text" id="lotacao" name="lotacao" required placeholder="Nome da Escola ou Unidade" />
-      </div>
-      <div class="form-group">
-        <label for="matricula">Número de matrícula:</label>
-        <input type="text" id="matricula" name="matricula" required placeholder="Matrícula do servidor" />
-      </div>
-    <div class="form-group">
-  <label for="classe_atual">Classe atual:</label>
-  <input type="text" id="classe_atual" name="classe_atual" required placeholder="Ex: I, II, III ou IV" />
-</div>
-<div class="form-group">
-  <label for="faixa_atual">Faixa atual:</label>
-  <input type="text" id="faixa_atual" name="faixa_atual" required placeholder="Ex: A, B, C ou D" />
-</div>
     </div>
-
-    <h2>Cálculo de Progressão e Diferenças</h2>
     <div class="form-section">
-      <p><em>Preencha os campos acima de Data de Ingresso, Carga Horária e Titulação para visualizar o cálculo da progressão funcional e diferenças salariais.</em></p>
-      <div class="form-group">
-        <label for="salario_atual">Salário atual (base) do servidor:</label>
-        <input type="text" id="salario_atual" name="salario_atual" placeholder="R$ 0,00 (opcional)" />
-      </div>
-      <!-- Campos calculados automaticamente (somente leitura) -->
-      <div class="form-group">
-        <label for="posicao">Posicionamento correto na carreira (Classe/Faixa):</label>
-        <input type="text" id="posicao" name="posicao" class="output-field" readonly />
-      </div>
-      <div class="form-group">
-        <label for="salario_correto">Salário base correto atual (conforme matriz):</label>
-        <input type="text" id="salario_correto" name="salario_correto" class="output-field" readonly />
-      </div>
-      <div class="form-group">
-        <label for="diferenca_mensal">Diferença mensal média:</label>
-        <input type="text" id="diferenca_mensal" name="diferenca_mensal" class="output-field" readonly />
-      </div>
-      <div class="form-group">
-        <label for="total_atrasados">Total estimado de atrasados (60 meses):</label>
-        <input type="text" id="total_atrasados" name="total_atrasados" class="output-field" readonly />
-      </div>
+      <label for="data_ingresso" class="required-field">Data de ingresso no cargo:</label>
+      <input type="date" id="data_ingresso" name="data_ingresso" required />
     </div>
-
-    <h2>Termos</h2>
     <div class="form-section">
-      <div class="form-group">
-        <label class="terms-label">
-          <input type="checkbox" id="aceite" name="aceite" required />
-          Declaro que as informações fornecidas são verdadeiras e aceito os termos de uso, autorizando o contato para fins desta ação.
-        </label>
+      <label for="matricula" class="required-field">Matrícula:</label>
+      <input type="text" id="matricula" name="matricula" required />
+    </div>
+    <div class="form-section">
+      <label for="lotacao" class="required-field">Escola/Unidade de lotação:</label>
+      <input type="text" id="lotacao" name="lotacao" required />
+    </div>
+    <div class="form-section">
+      <label for="telefone" class="required-field">Telefone:</label>
+      <input type="tel" id="telefone" name="telefone" placeholder="(DD) 00000-0000" required />
+    </div>
+    <div class="form-section">
+      <label for="email" class="required-field">E-mail:</label>
+      <input type="email" id="email" name="email" required />
+    </div>
+    
+    <!-- Novo campo CEP com autopreenchimento -->
+    <div class="form-section">
+      <label for="endereco_cep" class="required-field">CEP:</label>
+      <input type="text" id="endereco_cep" name="endereco_cep" maxlength="9" placeholder="00000-000" required />
+      <span id="cep-loading" class="loading"></span>
+    </div>
+    
+    <!-- Campos de endereço -->
+    <div class="endereco-section">
+      <div class="form-section">
+        <label for="endereco_rua" class="required-field">Logradouro:</label>
+        <input type="text" id="endereco_rua" name="endereco_rua" required />
+      </div>
+      <div class="form-section">
+        <label for="endereco_numero" class="required-field">Número:</label>
+        <input type="text" id="endereco_numero" name="endereco_numero" required />
+      </div>
+      <div class="form-section">
+        <label for="complemento">Complemento:</label>
+        <input type="text" id="complemento" name="complemento" />
+      </div>
+      <div class="form-section">
+        <label for="endereco_bairro" class="required-field">Bairro:</label>
+        <input type="text" id="endereco_bairro" name="endereco_bairro" required />
+      </div>
+      <div class="form-section">
+        <label for="endereco_cidade" class="required-field">Cidade:</label>
+        <input type="text" id="endereco_cidade" name="endereco_cidade" required />
+      </div>
+      <div class="form-section">
+        <label for="endereco_estado" class="required-field">Estado:</label>
+        <input type="text" id="endereco_estado" name="endereco_estado" maxlength="2" required />
       </div>
     </div>
-
-    <button type="submit">Enviar</button>
   </form>
 
-  <script>
-    // Funções para busca de CEP via API ViaCEP
-    function limpa_formulário_cep() {
-      // Limpa valores dos campos de endereço.
-      document.getElementById('rua').value = "";
-      document.getElementById('bairro').value = "";
-      document.getElementById('cidade').value = "";
-      document.getElementById('uf').value = "";
+  <div class="submit-container">
+    <button type="button" id="btnSubmit" class="btn-submit">CALCULAR MEU SALÁRIO CORRETO</button>
+  </div>
+
+  <div id="resultados">
+    <h2>Resultado da Sua Progressão Funcional</h2>
+    <p><strong>Classe/Faixa Atual:</strong> <span id="classeAtual">-</span></p>
+    <p><strong>Classe/Faixa Deveria Estar:</strong> <span id="classeDeveria">-</span></p>
+    <p><strong>Salário Correto Atual (R$):</strong> <span id="salarioCorreto">-</span></p>
+    <p><strong>Diferença Mensal (R$):</strong> <span id="diferencaMensal">-</span></p>
+    <p><strong>Total Atrasados 60 meses (R$):</strong> <span id="totalAtrasados">-</span></p>
+    <p class="debug-info" id="debugInfo"></p>
+  </div>
+  
+  <div id="successMessage" class="success-message">
+    <h3>Cálculo realizado com sucesso!</h3>
+    <p>Seus dados foram enviados e processados. Um de nossos especialistas entrará em contato em breve para discutir os próximos passos.</p>
+  </div>
+</div>
+
+<script>
+// Tabelas salariais (valores de vencimento base) atualizadas para 2025 conforme LC 539/2024
+// Estrutura: tabelas[cargo][horas][titulação] = array de 16 valores (Classe I A até Classe IV D)
+const tabelas = {
+  "Professor": {
+    "150h": {
+      "Magistério": [3435.43, 3469.78, 3521.83, 3574.66, 3435.43, 3435.43, 3435.43, 3435.43, 3435.43, 3435.43, 3435.43, 3435.43, 3435.43, 3435.43, 3435.43, 3435.43],
+      "Licenciatura": [3435.43, 3469.78, 3521.83, 3574.66, 3646.15, 3682.61, 3737.85, 3793.92, 3983.61, 4023.45, 4083.80, 4145.06, 4559.56, 4650.76, 4743.77, 4838.65],
+      "Especialização": [3710.26, 3747.36, 3803.58, 3860.63, 3937.84, 3977.22, 4036.88, 4097.43, 4501.48, 4546.50, 4614.70, 4683.92, 5152.31, 5255.35, 5360.46, 5467.67],
+      "Mestrado": [4229.70, 4272.00, 4336.08, 4401.12, 4489.14, 4534.03, 4602.04, 4671.07, 5131.69, 5183.01, 5260.75, 5339.66, 5873.63, 5991.10, 6110.93, 6233.14],
+      "Doutorado": [4864.15, 4912.80, 4986.49, 5061.28, 5162.51, 5214.14, 5292.35, 5371.73, 5901.44, 5960.46, 6049.87, 6140.61, 6754.68, 6889.77, 7027.56, 7168.12]
+    },
+    "200h": {
+      "Magistério": [4580.57, 4626.38, 4695.77, 4766.21, 4580.57, 4580.57, 4580.57, 4580.57, 4580.57, 4580.57, 4580.57, 4580.57, 4580.57, 4580.57, 4580.57, 4580.57],
+      "Licenciatura": [4580.57, 4626.38, 4695.77, 4766.21, 4861.53, 4910.15, 4983.80, 5058.56, 5311.48, 5364.60, 5445.07, 5526.74, 6079.42, 6201.01, 6325.03, 6451.53],
+      "Especialização": [4947.02, 4996.49, 5071.43, 5147.51, 5250.46, 5302.96, 5382.50, 5463.24, 6001.98, 6062.00, 6152.93, 6245.22, 6869.74, 7007.14, 7147.28, 7290.23],
+      "Mestrado": [5639.60, 5695.99, 5781.43, 5868.16, 5985.52, 6045.37, 6136.05, 6228.10, 6842.25, 6910.68, 7014.34, 7119.55, 7831.51, 7988.14, 8147.90, 8310.86],
+      "Doutorado": [6485.54, 6550.39, 6648.65, 6748.38, 6883.35, 6952.18, 7056.46, 7162.31, 7868.59, 7947.28, 8066.49, 8187.49, 9006.23, 9186.36, 9370.09, 9557.49]
     }
-    function meu_callback(conteudo) {
-      if (!("erro" in conteudo)) {
-        // CEP encontrado: atualiza os campos.
-        document.getElementById('rua').value = conteudo.logradouro;
-        document.getElementById('bairro').value = conteudo.bairro;
-        document.getElementById('cidade').value = conteudo.localidade;
-        document.getElementById('uf').value = conteudo.uf;
+  },
+  "Analista": {
+    "30h": {
+      "Graduação": [2635.97, 2688.69, 2742.47, 2797.32, 2965.16, 3024.46, 3084.95, 3146.65, 3335.45, 3402.16, 3470.20, 3539.60, 3751.98, 3827.02, 3903.56, 3981.63],
+      "Especialização": [2846.85, 2903.79, 2961.87, 3021.10, 3202.37, 3266.42, 3331.74, 3398.38, 3602.28, 3674.33, 3747.81, 3822.77, 4052.14, 4133.18, 4215.84, 4300.16],
+      "Mestrado": [3302.35, 3368.40, 3435.76, 3504.48, 3714.75, 3789.04, 3864.82, 3942.12, 4178.65, 4262.22, 4347.47, 4434.41, 4700.48, 4794.49, 4890.38, 4988.19],
+      "Doutorado": [4094.91, 4176.81, 4260.35, 4345.55, 4606.29, 4698.41, 4792.38, 4888.23, 5181.52, 5285.15, 5390.86, 5498.67, 5828.59, 5945.17, 6064.07, 6185.35]
+    },
+    "40h": {
+      "Graduação": [3514.63, 3584.93, 3656.62, 3729.76, 3953.54, 4032.61, 4113.27, 4195.53, 4447.26, 4536.21, 4626.93, 4719.47, 5002.64, 5102.69, 5204.75, 5308.84],
+      "Especialização": [3795.80, 3871.72, 3949.15, 4028.14, 4269.83, 4355.22, 4442.33, 4531.17, 4803.04, 4899.10, 4997.09, 5097.03, 5402.85, 5510.91, 5621.12, 5733.55],
+      "Mestrado": [4403.13, 4491.19, 4581.02, 4672.64, 4953.00, 5052.06, 5153.10, 5256.16, 5571.53, 5682.96, 5796.62, 5912.55, 6267.31, 6392.65, 6520.50, 6650.91],
+      "Doutorado": [5459.88, 5569.08, 5680.46, 5794.07, 6141.72, 6264.55, 6389.84, 6517.64, 6908.70, 7046.87, 7187.81, 7331.57, 7771.46, 7926.89, 8085.43, 8247.13]
+    }
+  },
+  "Assistente": {
+    "30h": {
+      "Ensino Médio": [1822.89, 1859.34, 1896.53, 1934.46, 2011.84, 2052.08, 2093.12, 2134.98, 2220.38, 2264.79, 2310.08, 2356.29, 2450.54, 2499.55, 2549.54, 2600.53],
+      "Ensino Médio+180h": [1968.72, 2008.09, 2048.25, 2089.22, 2172.79, 2216.24, 2260.57, 2305.78, 2398.01, 2445.97, 2494.89, 2544.79, 2646.58, 2699.51, 2753.50, 2808.57],
+      "Ensino Médio+240h": [2283.71, 2329.39, 2375.98, 2423.49, 2520.43, 2570.84, 2622.26, 2674.71, 2781.69, 2837.33, 2894.07, 2951.96, 3070.03, 3131.43, 3194.06, 3257.94],
+      "Ensino Médio+300h": [2831.80, 2888.44, 2946.21, 3005.13, 3125.34, 3187.85, 3251.60, 3316.63, 3449.30, 3518.29, 3588.65, 3660.42, 3806.84, 3882.98, 3960.64, 4039.85]
+    },
+    "40h": {
+      "Ensino Médio": [2430.52, 2479.13, 2528.71, 2579.28, 2682.45, 2736.10, 2790.83, 2846.64, 2960.51, 3019.72, 3080.11, 3141.71, 3267.38, 3332.73, 3399.39, 3467.37],
+      "Ensino Médio+180h": [2624.96, 2677.46, 2731.01, 2785.63, 2897.05, 2954.99, 3014.09, 3074.37, 3197.35, 3261.30, 3326.52, 3393.05, 3528.77, 3599.35, 3671.34, 3744.76],
+      "Ensino Médio+240h": [3044.95, 3105.85, 3167.97, 3231.33, 3360.58, 3427.79, 3496.35, 3566.27, 3708.92, 3783.10, 3858.77, 3935.94, 4093.38, 4175.25, 4258.75, 4343.93],
+      "Ensino Médio+300h": [3775.74, 3851.25, 3928.28, 4006.84, 4167.12, 4250.46, 4335.47, 4422.18, 4599.07, 4691.05, 4784.87, 4880.57, 5075.79, 5177.30, 5280.85, 5386.47]
+    }
+  },
+  "Auxiliar": {
+    "30h": {
+      "Ensino Fundamental 4ª série": [1587.04, 1618.78, 1651.16, 1684.18, 1751.55, 1786.58, 1822.31, 1858.76, 1933.11, 1971.77, 2011.21, 2051.43, 2133.49, 2176.16, 2219.68, 2264.07],
+      "Ensino Fundamental Completo": [1714.00, 1748.29, 1783.25, 1818.92, 1891.67, 1929.51, 1968.10, 2007.46, 2087.76, 2129.51, 2172.10, 2215.54, 2304.17, 2350.25, 2397.25, 2445.20],
+      "Ensino Fundamental+180h": [1988.25, 2028.01, 2068.57, 2109.94, 2194.34, 2238.23, 2283.99, 2328.65, 2421.80, 2470.23, 2519.64, 2570.03, 2672.83, 2726.29, 2780.81, 2836.43],
+      "Ensino Fundamental+240h": [2465.42, 2514.73, 2565.03, 2616.33, 2720.98, 2775.40, 2830.91, 2887.53, 3003.03, 3063.09, 3124.35, 3186.84, 3314.31, 3380.60, 3448.21, 3517.17]
+    },
+    "40h": {
+      "Ensino Fundamental 4ª série": [2116.06, 2158.38, 2201.54, 2245.57, 2335.40, 2382.11, 2429.75, 2478.34, 2577.48, 2629.03, 2681.61, 2735.24, 2844.65, 2901.54, 2959.57, 3018.76],
+      "Ensino Fundamental Completo": [2285.34, 2331.05, 2377.67, 2425.22, 2522.23, 2572.67, 2624.13, 2676.61, 2783.67, 2839.35, 2896.14, 2954.06, 3072.22, 3133.66, 3196.34, 3260.26],
+      "Ensino Fundamental+180h": [2650.99, 2704.01, 2758.09, 2813.26, 2925.79, 2984.30, 3043.99, 3104.87, 3229.06, 3293.64, 3359.52, 3426.71, 3563.78, 3635.05, 3707.75, 3781.91],
+      "Ensino Fundamental+240h": [3287.23, 3352.98, 3420.04, 3488.44, 3627.98, 3700.53, 3774.55, 3850.04, 4004.04, 4084.12, 4165.80, 4249.12, 4419.08, 4507.46, 4597.61, 4689.56]
+    }
+  }
+};
+
+// Mapeamento de opções de carga horária e titulação por cargo
+const opcoesHoras = {
+  "Professor": ["150h", "200h"],
+  "Analista": ["30h", "40h"],
+  "Assistente": ["30h", "40h"],
+  "Auxiliar": ["30h", "40h"]
+};
+const opcoesTitulacao = {
+  "Professor": ["Magistério", "Licenciatura", "Especialização", "Mestrado", "Doutorado"],
+  "Analista": ["Graduação", "Especialização", "Mestrado", "Doutorado"],
+  "Assistente": ["Ensino Médio", "Ensino Médio+180h", "Ensino Médio+240h", "Ensino Médio+300h"],
+  "Auxiliar": ["Ensino Fundamental 4ª série", "Ensino Fundamental Completo", "Ensino Fundamental+180h", "Ensino Fundamental+240h"]
+};
+
+// Mapeamento de classes e faixas para descrição
+const classesFaixas = [
+  "Classe I Faixa A", "Classe I Faixa B", "Classe I Faixa C", "Classe I Faixa D",
+  "Classe II Faixa A", "Classe II Faixa B", "Classe II Faixa C", "Classe II Faixa D",
+  "Classe III Faixa A", "Classe III Faixa B", "Classe III Faixa C", "Classe III Faixa D",
+  "Classe IV Faixa A", "Classe IV Faixa B", "Classe IV Faixa C", "Classe IV Faixa D"
+];
+
+// Referências aos elementos de formulário e resultados
+const cargoSelect = document.getElementById("cargo");
+const horasSelect = document.getElementById("carga_horaria");
+const titulacaoSelect = document.getElementById("titulacao");
+const salarioSelect = document.getElementById("salarioSelect");
+const salarioCustomCheck = document.getElementById("salarioCustomCheck");
+const salarioCustomInput = document.getElementById("salarioCustomInput");
+const ingressoInput = document.getElementById("data_ingresso");
+const classeAtualSpan = document.getElementById("classeAtual");
+const classeDeveriaSpan = document.getElementById("classeDeveria");
+const salarioCorretoSpan = document.getElementById("salarioCorreto");
+const diferencaMensalSpan = document.getElementById("diferencaMensal");
+const totalAtrasadosSpan = document.getElementById("totalAtrasados");
+const cepInput = document.getElementById("endereco_cep");
+const cepLoading = document.getElementById("cep-loading");
+const btnSubmit = document.getElementById("btnSubmit");
+const debugInfo = document.getElementById("debugInfo");
+const resultadosDiv = document.getElementById("resultados");
+const successMessageDiv = document.getElementById("successMessage");
+
+// Variável global para armazenar o salário atual
+let salarioAtualValor = 0;
+
+// Atualiza as opções de Carga Horária e Titulação quando o cargo for selecionado
+cargoSelect.addEventListener("change", function() {
+  const cargo = cargoSelect.value;
+  
+  // Preencher opções de carga horária
+  horasSelect.innerHTML = '<option value="" disabled selected>Selecione a carga horária</option>';
+  if (cargo && opcoesHoras[cargo]) {
+    opcoesHoras[cargo].forEach(h => {
+      const opt = document.createElement("option");
+      opt.value = h;
+      opt.textContent = h;
+      horasSelect.appendChild(opt);
+    });
+  }
+  
+  // Limpar e preencher opções de titulação de acordo com cargo selecionado
+  titulacaoSelect.innerHTML = '<option value="" disabled selected>Selecione a titulação</option>';
+  if (cargo && opcoesTitulacao[cargo]) {
+    opcoesTitulacao[cargo].forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t;
+      opt.textContent = t;
+      titulacaoSelect.appendChild(opt);
+    });
+  }
+  
+  // Limpar campos dependentes
+  salarioSelect.innerHTML = '<option value="" disabled selected>Selecione o salário</option>';
+  salarioCustomInput.value = "";
+  salarioCustomCheck.checked = false;
+  salarioCustomInput.disabled = true;
+  salarioAtualValor = 0;
+  
+  // Esconder resultados
+  resultadosDiv.style.display = "none";
+  successMessageDiv.style.display = "none";
+});
+
+// Quando carga horária ou titulação mudar, atualizar lista de salários
+function atualizaListaSalarios() {
+  const cargo = cargoSelect.value;
+  const horas = horasSelect.value;
+  const titulacao = titulacaoSelect.value;
+  
+  // Limpar o select de salários
+  salarioSelect.innerHTML = '<option value="" disabled selected>Selecione o salário</option>';
+  
+  if (cargo && horas && titulacao) {
+    const tabela = tabelas[cargo]?.[horas]?.[titulacao];
+    if (tabela) {
+      // Adicionar cada salário da tabela como uma opção
+      tabela.forEach((salario, index) => {
+        const opt = document.createElement("option");
+        opt.value = salario.toFixed(2);
+        opt.textContent = `${formatCurrency(salario)} - ${classesFaixas[index]}`;
+        salarioSelect.appendChild(opt);
+      });
+      
+      // Selecionar o primeiro salário por padrão (Classe I Faixa A)
+      salarioSelect.value = tabela[0].toFixed(2);
+      
+      // Atualizar o valor do salário atual
+      salarioAtualValor = tabela[0];
+      
+      // Preencher o campo de valor personalizado com o valor selecionado
+      salarioCustomInput.value = formatCurrency(tabela[0]);
+    }
+  }
+  
+  // Esconder resultados
+  resultadosDiv.style.display = "none";
+  successMessageDiv.style.display = "none";
+}
+
+horasSelect.addEventListener("change", function() {
+  atualizaListaSalarios();
+});
+
+titulacaoSelect.addEventListener("change", function() {
+  atualizaListaSalarios();
+});
+
+// Quando o select de salário mudar, atualizar o valor do salário atual
+salarioSelect.addEventListener("change", function() {
+  if (!salarioCustomCheck.checked && salarioSelect.value) {
+    const valorSelecionado = parseFloat(salarioSelect.value);
+    salarioAtualValor = valorSelecionado;
+    salarioCustomInput.value = formatCurrency(valorSelecionado);
+  }
+});
+
+// Quando o checkbox de salário personalizado for alterado
+salarioCustomCheck.addEventListener("change", function() {
+  if (this.checked) {
+    salarioCustomInput.disabled = false;
+    salarioCustomInput.focus();
+    salarioCustomInput.select();
+  } else {
+    salarioCustomInput.disabled = true;
+    if (salarioSelect.value) {
+      const valorSelecionado = parseFloat(salarioSelect.value);
+      salarioAtualValor = valorSelecionado;
+      salarioCustomInput.value = formatCurrency(valorSelecionado);
+    }
+  }
+});
+
+// Função para formatar número como moeda brasileira
+function formatCurrency(value) {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value);
+}
+
+// Função para converter string de moeda para número
+function currencyToNumber(currencyString) {
+  if (!currencyString) return 0;
+  return parseFloat(currencyString.replace(/[^\d,.-]/g, '').replace(',', '.'));
+}
+
+// Formatar o campo de salário enquanto digita
+salarioCustomInput.addEventListener("input", function(e) {
+  // Obter apenas os números do valor digitado
+  let value = e.target.value.replace(/\D/g, '');
+  
+  // Converter para número (dividindo por 100 para considerar centavos)
+  let numValue = parseFloat(value) / 100 || 0;
+  
+  // Atualizar o valor do salário atual
+  salarioAtualValor = numValue;
+  
+  // Formatar como moeda
+  e.target.value = formatCurrency(numValue);
+});
+
+// Recalcular resultados quando todos os dados necessários forem preenchidos
+function recalcular() {
+  const cargo = cargoSelect.value;
+  const horas = horasSelect.value;
+  const titulacao = titulacaoSelect.value;
+  const dataIngresso = ingressoInput.value ? new Date(ingressoInput.value) : null;
+  
+  // Exibir informações de depuração
+  debugInfo.textContent = `Salário atual: ${salarioAtualValor.toFixed(2)}`;
+  
+  if (!(cargo && horas && titulacao && salarioAtualValor > 0 && dataIngresso instanceof Date && !isNaN(dataIngresso))) {
+    debugInfo.textContent += " | Faltam dados para cálculo";
+    return false; // Se falta algum dado ou data inválida, não calcula
+  }
+  
+  // Obter tabela correspondente
+  const tabela = tabelas[cargo]?.[horas]?.[titulacao];
+  if (!tabela) {
+    debugInfo.textContent += " | Tabela não encontrada";
+    return false;
+  }
+  
+  // Encontrar Classe e Faixa atual pelo salário informado
+  let indiceAtual = -1;
+  
+  // Primeiro tenta encontrar o valor exato
+  for (let i = 0; i < tabela.length; i++) {
+    if (Math.abs(tabela[i] - salarioAtualValor) < 0.01) {
+      indiceAtual = i;
+      break;
+    }
+  }
+  
+  // Se não encontrar, tenta arredondar para 2 casas e comparar
+  if (indiceAtual === -1) {
+    const salarioStr = salarioAtualValor.toFixed(2);
+    for (let i = 0; i < tabela.length; i++) {
+      if (tabela[i].toFixed(2) === salarioStr) {
+        indiceAtual = i;
+        break;
+      }
+    }
+  }
+  
+  // Se ainda não encontrar, usa o valor mais próximo
+  if (indiceAtual === -1) {
+    let menorDiferenca = Number.MAX_VALUE;
+    for (let i = 0; i < tabela.length; i++) {
+      const diferenca = Math.abs(tabela[i] - salarioAtualValor);
+      if (diferenca < menorDiferenca) {
+        menorDiferenca = diferenca;
+        indiceAtual = i;
+      }
+    }
+  }
+  
+  debugInfo.textContent += ` | Índice atual: ${indiceAtual}`;
+  
+  if (indiceAtual === -1) {
+    classeAtualSpan.textContent = "Não identificado";
+    classeDeveriaSpan.textContent = "-";
+    salarioCorretoSpan.textContent = "-";
+    diferencaMensalSpan.textContent = "-";
+    totalAtrasadosSpan.textContent = "-";
+    return false;
+  }
+  
+  // Calcular anos de serviço completos
+  const hoje = new Date();
+  let anosServico = hoje.getFullYear() - dataIngresso.getFullYear();
+  
+  // Ajustar se ainda não fez aniversário de ingresso este ano
+  const mesAtual = hoje.getMonth();
+  const diaAtual = hoje.getDate();
+  const mesIngresso = dataIngresso.getMonth();
+  const diaIngresso = dataIngresso.getDate();
+  if (mesAtual < mesIngresso || (mesAtual === mesIngresso && diaAtual < diaIngresso)) {
+    anosServico--;
+  }
+  if (anosServico < 0) anosServico = 0;
+  
+  debugInfo.textContent += ` | Anos de serviço: ${anosServico}`;
+  
+  // Número de progressões (assumindo 1 faixa por ano de serviço, dado omissão de avaliação)
+  let incrementos = anosServico;
+  
+  // Calcular índice alvo (atual + incrementos)
+  let indiceAlvo = indiceAtual + incrementos;
+  if (indiceAlvo >= tabela.length) {
+    indiceAlvo = tabela.length - 1; // não passar do topo (Classe IV D)
+  }
+  
+  debugInfo.textContent += ` | Índice alvo: ${indiceAlvo}`;
+  
+  // Determinar Classe/Faixa atual e devida
+  const classeAtual = Math.floor(indiceAtual / 4) + 1; // Classe I=1, II=2, ...
+  const faixaAtual = ["A", "B", "C", "D"][indiceAtual % 4]; // Faixa A=0, B=1, C=2, D=3
+  const classeDeveria = Math.floor(indiceAlvo / 4) + 1;
+  const faixaDeveria = ["A", "B", "C", "D"][indiceAlvo % 4];
+  
+  // Calcular diferenças salariais
+  const salarioCorreto = tabela[indiceAlvo];
+  const diferencaMensal = salarioCorreto - salarioAtualValor;
+  const totalAtrasados = diferencaMensal * 60; // 60 meses (5 anos)
+  
+  debugInfo.textContent += ` | Salário correto: ${salarioCorreto.toFixed(2)} | Diferença: ${diferencaMensal.toFixed(2)}`;
+  
+  // Atualizar resultados na página
+  classeAtualSpan.textContent = `Classe ${classeAtual} Faixa ${faixaAtual}`;
+  classeDeveriaSpan.textContent = `Classe ${classeDeveria} Faixa ${faixaDeveria}`;
+  salarioCorretoSpan.textContent = formatCurrency(salarioCorreto);
+  diferencaMensalSpan.textContent = formatCurrency(diferencaMensal);
+  totalAtrasadosSpan.textContent = formatCurrency(totalAtrasados);
+  
+  return {
+    classe_atual: classeAtual,
+    faixa_atual: faixaAtual,
+    posicao: `Classe ${classeDeveria} Faixa ${faixaDeveria}`,
+    salario_atual: salarioAtualValor.toFixed(2),
+    salario_correto: salarioCorreto.toFixed(2),
+    diferenca_mensal: diferencaMensal.toFixed(2),
+    total_atrasados: totalAtrasados.toFixed(2),
+    anos_servico: anosServico,
+    numero_progressoes: incrementos
+  };
+}
+
+// Função para buscar endereço pelo CEP usando a API ViaCEP
+function buscarEnderecoPorCEP(cep) {
+  // Limpar formatação do CEP
+  cep = cep.replace(/\D/g, '');
+  
+  if (cep.length !== 8) {
+    return;
+  }
+  
+  // Mostrar indicador de carregamento
+  cepLoading.textContent = "Buscando...";
+  
+  fetch(`https://viacep.com.br/ws/${cep}/json/`)
+    .then(response => response.json())
+    .then(data => {
+      if (!data.erro) {
+        document.getElementById("endereco_rua").value = data.logradouro;
+        document.getElementById("endereco_bairro").value = data.bairro;
+        document.getElementById("endereco_cidade").value = data.localidade;
+        document.getElementById("endereco_estado").value = data.uf;
+        // Focar no campo número após preenchimento automático
+        document.getElementById("endereco_numero").focus();
       } else {
-        // CEP não encontrado.
-        limpa_formulário_cep();
         alert("CEP não encontrado.");
       }
+      cepLoading.textContent = "";
+    })
+    .catch(error => {
+      console.error("Erro ao buscar CEP:", error);
+      cepLoading.textContent = "";
+      alert("Erro ao buscar o CEP. Tente novamente mais tarde.");
+    });
+}
+
+// Formatar CEP enquanto digita
+cepInput.addEventListener("input", function(e) {
+  let value = e.target.value.replace(/\D/g, "");
+  if (value.length > 5) {
+    value = value.substring(0, 5) + "-" + value.substring(5);
+  }
+  e.target.value = value;
+});
+
+// Buscar endereço quando o CEP perder o foco
+cepInput.addEventListener("blur", function() {
+  const cep = cepInput.value;
+  if (cep && cep.length >= 8) {
+    buscarEnderecoPorCEP(cep);
+  }
+});
+
+// Formatar CPF enquanto digita
+document.getElementById("cpf").addEventListener("input", function(e) {
+  let value = e.target.value.replace(/\D/g, "");
+  if (value.length > 9) {
+    value = value.substring(0, 3) + "." + value.substring(3, 6) + "." + value.substring(6, 9) + "-" + value.substring(9);
+  } else if (value.length > 6) {
+    value = value.substring(0, 3) + "." + value.substring(3, 6) + "." + value.substring(6);
+  } else if (value.length > 3) {
+    value = value.substring(0, 3) + "." + value.substring(3);
+  }
+  e.target.value = value;
+});
+
+// Formatar telefone enquanto digita
+document.getElementById("telefone").addEventListener("input", function(e) {
+  let value = e.target.value.replace(/\D/g, "");
+  if (value.length > 10) {
+    value = "(" + value.substring(0, 2) + ") " + value.substring(2, 7) + "-" + value.substring(7);
+  } else if (value.length > 6) {
+    value = "(" + value.substring(0, 2) + ") " + value.substring(2, 6) + "-" + value.substring(6);
+  } else if (value.length > 2) {
+    value = "(" + value.substring(0, 2) + ") " + value.substring(2);
+  }
+  e.target.value = value;
+});
+
+// Calcular e mostrar resultados quando o botão for clicado
+btnSubmit.addEventListener("click", function() {
+  // Verificar se todos os campos obrigatórios estão preenchidos
+  const form = document.getElementById("progForm");
+  const requiredFields = form.querySelectorAll("[required]");
+  let allFilled = true;
+  
+  requiredFields.forEach(field => {
+    if (!field.value) {
+      allFilled = false;
+      field.classList.add("error");
+    } else {
+      field.classList.remove("error");
     }
-    function buscarCEP() {
-      // Obtém o valor do CEP, filtrando dígitos.
-      var cep = document.getElementById('cep').value.replace(/\D/g, '');
-      if (cep != "") {
-        // Expressão regular para validar o CEP (formato 8 dígitos).
-        var validacep = /^[0-9]{8}$/;
-        if (validacep.test(cep)) {
-          // Preenche campos com "..." enquanto consulta o webservice.
-          document.getElementById('rua').value = "...";
-          document.getElementById('bairro').value = "...";
-          document.getElementById('cidade').value = "...";
-          document.getElementById('uf').value = "...";
-          // Cria um elemento script para buscar o JSON do ViaCEP.
-          var script = document.createElement('script');
-          script.src = 'https://viacep.com.br/ws/' + cep + '/json/?callback=meu_callback';
-          document.body.appendChild(script);
-        } else {
-          // CEP inválido.
-          limpa_formulário_cep();
-          alert("Formato de CEP inválido.");
-        }
+  });
+  
+  if (!allFilled) {
+    alert("Por favor, preencha todos os campos obrigatórios.");
+    return;
+  }
+  
+  // Calcular resultados
+  const resultados = recalcular();
+  if (resultados) {
+    // Mostrar resultados
+    resultadosDiv.style.display = "block";
+    
+    // Rolar até os resultados
+    resultadosDiv.scrollIntoView({ behavior: 'smooth' });
+    
+    // Enviar dados para o script do Google Apps Script
+    const formData = new FormData();
+    
+    // Adicionar todos os campos do formulário
+    formData.append('nome', document.getElementById("nome").value);
+    formData.append('cpf', document.getElementById("cpf").value);
+    formData.append('cargo', cargoSelect.value);
+    formData.append('carga_horaria', horasSelect.value);
+    formData.append('data_ingresso', ingressoInput.value);
+    formData.append('titulacao', titulacaoSelect.value);
+    formData.append('salario_atual', formatCurrency(salarioAtualValor));
+    formData.append('matricula', document.getElementById("matricula").value);
+    formData.append('lotacao', document.getElementById("lotacao").value);
+    formData.append('telefone', document.getElementById("telefone").value);
+    formData.append('email', document.getElementById("email").value);
+    formData.append('endereco_cep', cepInput.value);
+    formData.append('endereco_rua', document.getElementById("endereco_rua").value);
+    formData.append('endereco_numero', document.getElementById("endereco_numero").value);
+    formData.append('complemento', document.getElementById("complemento").value);
+    formData.append('endereco_bairro', document.getElementById("endereco_bairro").value);
+    formData.append('endereco_cidade', document.getElementById("endereco_cidade").value);
+    formData.append('endereco_estado', document.getElementById("endereco_estado").value);
+    
+    // Adicionar resultados calculados
+    formData.append('classe_atual', resultados.classe_atual);
+    formData.append('faixa_atual', resultados.faixa_atual);
+    formData.append('posicao', resultados.posicao);
+    formData.append('salario_correto', resultados.salario_correto);
+    formData.append('diferenca_mensal', resultados.diferenca_mensal);
+    formData.append('total_atrasados', resultados.total_atrasados);
+    formData.append('anos_servico', resultados.anos_servico);
+    formData.append('numero_progressoes', resultados.numero_progressoes);
+    
+    // URL do seu Google Apps Script Web App
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwybDDENaIIZy5GrPE_bK5tGFxCkEjzZek8ADDcSslEb0E93YZ5ANpH_rwfa9zj27m9/exec';
+    
+    // Enviar dados via POST
+    fetch(scriptURL, {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => {
+      if (response.ok) {
+        successMessageDiv.style.display = "block";
+        console.log("Dados enviados com sucesso!");
       } else {
-        // CEP vazio, limpa formulário.
-        limpa_formulário_cep();
+        throw new Error('Erro ao enviar dados');
       }
-    }
+    })
+    .catch(error => {
+      console.error('Erro:', error);
+      alert("Erro ao enviar os dados. Por favor, tente novamente mais tarde.");
+    });
+  } else {
+    alert("Não foi possível calcular os resultados. Verifique os dados informados.");
+  }
+});
 
-    (function(){
-      // Tabelas de vencimento base (atualizadas pela LC 539/2024, valores de Jan/2024)
-      // Estrutura: salarios[horas][titulacao][classeIndex][faixaIndex] = valor base em R$
-      // classeIndex: 0->Classe I, 1->Classe II, 2->Classe III, 3->Classe IV
-      // faixaIndex: 0->A, 1->B, 2->C, 3->D
-      const salarios150 = {
-        "licenciatura": [
-          [3435.43, 3435.43, 3435.43, 3435.43],       // Classe I (Licenciatura)
-          [3435.43, 3435.43, 3435.43, 3435.43],       // Classe II (Licenciatura)
-          [3532.33, 3602.98, 3675.04, 3748.54],       // Classe III (Licenciatura)
-          [4123.40, 4205.86, 4289.98, 4375.78]        // Classe IV (Licenciatura)
-        ],
-        "especializacao": [
-          [3435.43, 3435.43, 3435.43, 3435.43],       // Classe I (Especialização)
-          [3435.43, 3487.77, 3557.52, 3628.67],       // Classe II (Especialização)
-          [3991.54, 4071.37, 4152.80, 4235.85],       // Classe III (Especialização)
-          [4659.44, 4752.63, 4847.68, 4944.63]        // Classe IV (Especialização)
-        ],
-        "mestrado": [
-          [3435.43, 3435.43, 3474.23, 3543.72],       // Classe I (Mestrado)
-          [3898.09, 3976.05, 4055.57, 4136.69],       // Classe II (Mestrado)
-          [4550.35, 4641.36, 4734.19, 4828.87],       // Classe III (Mestrado)
-          [5311.76, 5417.99, 5526.35, 5636.88]        // Classe IV (Mestrado)
-        ],
-        "doutorado": [
-          [3840.22, 3917.03, 3995.37, 4075.28],       // Classe I (Doutorado)
-          [4482.80, 4572.46, 4663.91, 4757.19],       // Classe II (Doutorado)
-          [5232.91, 5337.56, 5444.32, 5553.20],       // Classe III (Doutorado)
-          [6108.52, 6230.69, 6355.31, 6482.41]        // Classe IV (Doutorado)
-        ],
-        "magisterio": [
-          // Obs: Para magistério (quadros em extinção), não há progressão nas tabelas atuais.
-          // Considera salário base = piso do magistério (Classe I A) constante ao longo da carreira.
-          [3435.43, 3435.43, 3435.43, 3435.43],       // Classe I (Magistério)
-          [3435.43, 3435.43, 3435.43, 3435.43],       // Classe II
-          [3435.43, 3435.43, 3435.43, 3435.43],       // Classe III
-          [3435.43, 3435.43, 3435.43, 3435.43]        // Classe IV
-        ]
-      };
-      // Para 200h e 300h, escalonamos proporcionalmente (200h = 4/3 de 150h; 300h = 2x 150h).
-      function escalaSalarios(baseSalarios, fator) {
-        const result = {};
-        for (let tit in baseSalarios) {
-          result[tit] = baseSalarios[tit].map(classe =>
-            classe.map(valor => parseFloat((valor * fator).toFixed(2)))
-          );
-        }
-        return result;
-      }
-      const salarios200 = escalaSalarios(salarios150, 4/3);
-      const salarios300 = escalaSalarios(salarios150, 2);
-
-      // Formata número como moeda brasileira (R$)
-      function formatarReal(valor) {
-        if (isNaN(valor) || valor === null) return "";
-        return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      }
-
-      // Obtém salário base correto dada horas, titulação, classe e faixa
-      function obterSalarioBase(horas, titulacao, classeIndex, faixaIndex) {
-        let tabela;
-        if (horas === 150) tabela = salarios150;
-        else if (horas === 200) tabela = salarios200;
-        else if (horas === 300) tabela = salarios300;
-        else return null;
-        // Titulação: chave correspondente
-        let titKey;
-        switch(titulacao) {
-          case "magisterio": titKey = "magisterio"; break;
-          case "licenciatura": titKey = "licenciatura"; break;
-          case "especializacao": titKey = "especializacao"; break;
-          case "mestrado": titKey = "mestrado"; break;
-          case "doutorado": titKey = "doutorado"; break;
-          default: titKey = "licenciatura";
-        }
-        return tabela[titKey][classeIndex][faixaIndex];
-      }
-
-      // Determina classe e faixa de acordo com anos de serviço
-      function calcularClasseFaixa(anos) {
-        if (anos < 0) anos = 0;
-        let classeIndex = Math.floor(anos / 4);
-        let faixaIndex = anos % 4;
-        if (classeIndex > 3) {
-          // Limita à última classe (IV) se extrapolar tempo
-          classeIndex = 3;
-          faixaIndex = 3;
-        } else if (classeIndex === 3) {
-          // Se está na Classe IV, mas anos%4 == 0, então acabou de entrar na IV (faixa A)
-          if (faixaIndex === 0 && anos >= 12) {
-            faixaIndex = 0;
-          }
-        }
-        return { classeIndex, faixaIndex };
-      }
-
-      // Elementos do form usados no cálculo
-      const dataIngressoEl   = document.getElementById('data_ingresso');
-      const cargaHorariaEl   = document.getElementById('carga_horaria');
-      const titulacaoEl      = document.getElementById('titulacao');
-      const salarioAtualEl   = document.getElementById('salario_atual');
-      const posicaoEl        = document.getElementById('posicao');
-      const salarioCorretoEl = document.getElementById('salario_correto');
-      const diferencaMensalEl= document.getElementById('diferenca_mensal');
-      const totalAtrasadosEl = document.getElementById('total_atrasados');
-
-      // Função principal de cálculo de progressão
-      function atualizarCalculos() {
-        const dtValor   = dataIngressoEl.value;
-        const cargaValor= parseInt(cargaHorariaEl.value);
-        const titValor  = titulacaoEl.value;
-        if (!dtValor || !cargaValor || !titValor) {
-          // Se faltar algum dado essencial, limpa os campos calculados
-          posicaoEl.value = "";
-          salarioCorretoEl.value = "";
-          diferencaMensalEl.value = "";
-          totalAtrasadosEl.value = "";
-          return;
-        }
-        // Calcula anos completos de serviço (considerando data exata)
-        const hoje = new Date();
-        const ingresso = new Date(dtValor);
-        if (isNaN(ingresso.getTime())) {
-          return;
-        }
-        let anos = hoje.getFullYear() - ingresso.getFullYear();
-        const mesAtual = hoje.getMonth();
-        const mesIngresso = ingresso.getMonth();
-        if (mesAtual < mesIngresso || (mesAtual === mesIngresso && hoje.getDate() < ingresso.getDate())) {
-          anos--; // não completou aniversário de ingresso no ano corrente
-        }
-        if (anos < 0) anos = 0;
-        // Determina classe/faixa de direito com base nos anos
-        const { classeIndex, faixaIndex } = calcularClasseFaixa(anos);
-        const classes = ["I", "II", "III", "IV"];
-        const faixas  = ["A", "B", "C", "D"];
-        const classeDireito = classes[classeIndex];
-        const faixaDireito  = faixas[faixaIndex];
-        posicaoEl.value = `Classe ${classeDireito}, Faixa ${faixaDireito}`;
-
-        // Salário base correto para essa classe/faixa
-        const salarioBaseCorreto = obterSalarioBase(cargaValor, titValor, classeIndex, faixaIndex);
-        salarioCorretoEl.value = salarioBaseCorreto ? formatarReal(salarioBaseCorreto) : "";
-
-        // Se o salário atual foi fornecido, calcula as diferenças
-        let diferencaMensal = null;
-        let totalAtrasados = null;
-        const salarioAtualStr = salarioAtualEl.value.trim();
-        if (salarioAtualStr) {
-          // Converte string do salário atual para número (ignora "R$", pontos e vírgulas)
-          let salarioAtualNum = parseFloat(
-            salarioAtualStr.replace("R$", "").replace(/\./g, "").replace(",", ".")
-          );
-          if (isNaN(salarioAtualNum)) {
-            salarioAtualNum = null;
-          }
-          if (salarioBaseCorreto && salarioAtualNum != null) {
-            const diffAtual = salarioBaseCorreto - salarioAtualNum;
-            // Diferença mensal média:
-            // Se >=5 anos de serviço, considera diferença também 5 anos atrás:
-            let diffMedia = diffAtual;
-            if (anos >= 5) {
-              // Situação há 5 anos:
-              const anos5 = anos - 5;
-              const pos5 = calcularClasseFaixa(anos5);
-              const salCorreto5 = obterSalarioBase(cargaValor, titValor, pos5.classeIndex, pos5.faixaIndex);
-              // Supondo que sem progressão, salário há 5 anos seria o da categoria base inicial
-              const salBaseAtualCategoria = obterSalarioBase(cargaValor, titValor, 0, 0); // Classe I A atual
-              const diff5anos = salCorreto5 - (salBaseAtualCategoria || 0);
-              diffMedia = (diffAtual + diff5anos) / 2;
-            } else {
-              // <5 anos de casa: assume diferença crescendo linearmente desde ingresso
-              diffMedia = diffAtual / 2;
-            }
-            diferencaMensal = diffMedia;
-            // Total de atrasados nos últimos 60 meses (ou período de serviço, se <5 anos)
-            let meses = 60;
-            if (anos < 5) {
-              // Calcula número exato de meses desde o ingresso
-              const totalMeses = (hoje.getFullYear() - ingresso.getFullYear()) * 12 + (mesAtual - mesIngresso);
-              // Ajusta se o dia do mês atual ainda não alcançou o dia do ingresso
-              const diaAtual = hoje.getDate();
-              const diaIngresso = ingresso.getDate();
-              const totalMesesAjustado = (diaAtual >= diaIngresso) ? totalMeses + 1 : totalMeses;
-              meses = totalMesesAjustado;
-            }
-            totalAtrasados = diferencaMensal * meses;
-          }
-        }
-        diferencaMensalEl.value = diferencaMensal != null ? formatarReal(diferencaMensal) : "";
-        totalAtrasadosEl.value = totalAtrasados != null ? formatarReal(totalAtrasados) : "";
-      }
-
-      // Dispara o cálculo automático ao alterar os campos relevantes
-      dataIngressoEl.addEventListener('change', atualizarCalculos);
-      cargaHorariaEl.addEventListener('change', atualizarCalculos);
-      titulacaoEl.addEventListener('change', atualizarCalculos);
-      salarioAtualEl.addEventListener('input', atualizarCalculos);
-      // Calcula ao carregar a página, caso os campos já estejam preenchidos (ex.: edição)
-      document.addEventListener('DOMContentLoaded', atualizarCalculos);
-    })();
-  </script>
-
+// Inicializar o formulário
+document.addEventListener("DOMContentLoaded", function() {
+  // Definir data máxima para o campo de ingresso como hoje
+  const hoje = new Date();
+  const anoAtual = hoje.getFullYear();
+  const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
+  const diaAtual = String(hoje.getDate()).padStart(2, '0');
+  ingressoInput.max = `${anoAtual}-${mesAtual}-${diaAtual}`;
+  
+  // Esconder resultados inicialmente
+  resultadosDiv.style.display = "none";
+  successMessageDiv.style.display = "none";
+});
+</script>
 </body>
 </html>
